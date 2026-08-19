@@ -1,0 +1,77 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+// Comparison function for sorting
+int compare(const void* a, const void* b) {
+    return (*(int*)a - *(int*)b);
+}
+
+// Backtracking helper function
+void backtrack(int* nums, int numsSize, int* current, int currentSize, 
+               bool* visited, int*** result, int* resultSize) {
+    
+    // Base Case: If the current combination length equals numsSize, we found a full permutation
+    if (currentSize == numsSize) {
+        *result = realloc(*result, (*resultSize + 1) * sizeof(int*));
+        (*result)[*resultSize] = (int*)malloc(numsSize * sizeof(int));
+        for (int i = 0; i < numsSize; i++) {
+            (*result)[*resultSize][i] = current[i];
+        }
+        (*resultSize)++;
+        return;
+    }
+
+    for (int i = 0; i < numsSize; i++) {
+        // Skip if this specific element is already used in the current path
+        if (visited[i]) {
+            continue;
+        }
+
+        // CRITICAL DUPLICATE SKIP RULE:
+        // If nums[i] is the same as nums[i-1], and nums[i-1] was NOT visited,
+        // it means we just backtracked out of using nums[i-1]. Skip nums[i] to avoid a clone branch.
+        if (i > 0 && nums[i] == nums[i - 1] && !visited[i - 1]) {
+            continue;
+        }
+
+        // Choose nums[i]
+        visited[i] = true;
+        current[currentSize] = nums[i];
+
+        // Move deeper into the recursion tree
+        backtrack(nums, numsSize, current, currentSize + 1, visited, result, resultSize);
+
+        // Undo choice (backtrack)
+        visited[i] = false;
+    }
+}
+
+// Main function required by LeetCode
+int** permuteUnique(int* nums, int numsSize, int* returnSize, int** returnColumnSizes) {
+    // 1. Sort the array to group duplicates together
+    qsort(nums, numsSize, sizeof(int), compare);
+
+    int** result = NULL;
+    int resultSize = 0;
+
+    // Trackers for current path and visited elements
+    int* current = (int*)malloc(numsSize * sizeof(int));
+    bool* visited = (bool*)calloc(numsSize, sizeof(bool));
+
+    // 2. Start backtracking
+    backtrack(nums, numsSize, current, 0, visited, &result, &resultSize);
+
+    // Free local helpers
+    free(current);
+    free(visited);
+
+    // Set return outputs for the caller
+    *returnSize = resultSize;
+    *returnColumnSizes = (int*)malloc(resultSize * sizeof(int));
+    for (int i = 0; i < resultSize; i++) {
+        (*returnColumnSizes)[i] = numsSize;
+    }
+
+    return result;
+}
