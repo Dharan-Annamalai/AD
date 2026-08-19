@@ -1,0 +1,85 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Comparison function for qsort to sort integers in ascending order
+int compare(const void* a, const void* b) {
+    return (*(int*)a > *(int*)b) - (*(int*)a < *(int*)b);
+}
+
+/**
+ * Return an array of arrays of size *returnSize*.
+ * The sizes of the arrays are returned as *returnColumnSizes* array.
+ * Note: Both the returned array and *returnColumnSizes* array must be malocated, assume caller calls free().
+ */
+int** fourSum(int* nums, int numsSize, int target, int* returnSize, int** returnColumnSizes) {
+    // Initialise return sizes to 0
+    *returnSize = 0;
+    
+    // If there are fewer than 4 numbers, no quadruplet can be formed
+    if (numsSize < 4) {
+        *returnColumnSizes = NULL;
+        return NULL;
+    }
+
+    // 1. Sort the input array
+    qsort(nums, numsSize, sizeof(int), compare);
+
+    // Dynamic memory allocation for results
+    int capacity = 16;
+    int** result = (int**)malloc(capacity * sizeof(int*));
+    
+    // 2. Loop through the first two numbers
+    for (int i = 0; i < numsSize - 3; i++) {
+        // Skip duplicate numbers for the first position
+        if (i > 0 && nums[i] == nums[i - 1]) continue;
+
+        for (int j = i + 1; j < numsSize - 2; j++) {
+            // Skip duplicate numbers for the second position
+            if (j > i + 1 && nums[j] == nums[j - 1]) continue;
+
+            // 3. Use two pointers for the remaining two positions
+            int left = j + 1;
+            int right = numsSize - 1;
+
+            while (left < right) {
+                // Use long long to prevent integer overflow during addition
+                long long sum = (long long)nums[i] + nums[j] + nums[left] + nums[right];
+
+                if (sum == target) {
+                    // Resize result array if it runs out of space
+                    if (*returnSize >= capacity) {
+                        capacity *= 2;
+                        result = (int**)realloc(result, capacity * sizeof(int*));
+                    }
+
+                    // Allocate memory for the found quadruplet
+                    result[*returnSize] = (int*)malloc(4 * sizeof(int));
+                    result[*returnSize][0] = nums[i];
+                    result[*returnSize][1] = nums[j];
+                    result[*returnSize][2] = nums[left];
+                    result[*returnSize][3] = nums[right];
+                    (*returnSize)++;
+
+                    // Move pointers past duplicates
+                    while (left < right && nums[left] == nums[left + 1]) left++;
+                    while (left < right && nums[right] == nums[right - 1]) right--;
+
+                    left++;
+                    right--;
+                } else if (sum < target) {
+                    left++; // Sum is too small, move left pointer to increase it
+                } else {
+                    right--; // Sum is too large, move right pointer to decrease it
+                }
+            }
+        }
+    }
+
+    // Set the column sizes array for the output match LeetCode specifications
+    *returnColumnSizes = (int*)malloc((*returnSize) * sizeof(int));
+    for (int i = 0; i < *returnSize; i++) {
+        (*returnColumnSizes)[i] = 4;
+    }
+
+    return result;
+}
