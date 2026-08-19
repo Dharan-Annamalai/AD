@@ -1,0 +1,39 @@
+#include <stdbool.h>
+
+bool isValidSudoku(char** board, int boardSize, int* boardColSize) {
+    // Create 9 checklists for rows, 9 for columns, and 9 for 3x3 boxes
+    // Initially, all bits are 0 (empty checklists)
+    int rows[9] = {0};
+    int cols[9] = {0};
+    int boxes[9] = {0};
+
+    for (int r = 0; r < 9; r++) {
+        for (int c = 0; c < 9; c++) {
+            char val = board[r][c];
+
+            // If the cell is empty, skip it
+            if (val == '.') {
+                continue;
+            }
+
+            // Convert character '1'-'9' to a 0-indexed bit position (0 to 8)
+            int num_bit = 1 << (val - '1');
+
+            // Find which 3x3 box this cell belongs to
+            int box_index = (r / 3) * 3 + (c / 3);
+
+            // Check if this number has already been seen in this row, col, or box
+            if ((rows[r] & num_bit) || (cols[c] & num_bit) || (boxes[box_index] & num_bit)) {
+                return false; // Found a duplicate!
+            }
+
+            // Mark the number as "seen" in the row, col, and box
+            rows[r] |= num_bit;
+            cols[c] |= num_bit;
+            boxes[box_index] |= num_bit;
+        }
+    }
+
+    // If we checked the whole board without finding any duplicates, it's valid
+    return true;
+}
