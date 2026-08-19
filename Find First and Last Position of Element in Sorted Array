@@ -1,0 +1,42 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Helper function to perform binary search
+int findBound(int* nums, int numsSize, int target, int isFirst) {
+    int low = 0;
+    int high = numsSize - 1;
+    int bound = -1;
+
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+
+        if (nums[mid] == target) {
+            bound = mid; // Record the index where we found the target
+            
+            if (isFirst) {
+                high = mid - 1; // Keep looking to the left for the starting position
+            } else {
+                low = mid + 1;  // Keep looking to the right for the ending position
+            }
+        } else if (nums[mid] < target) {
+            low = mid + 1;
+        } else {
+            high = mid - 1;
+        }
+    }
+
+    return bound;
+}
+
+// Main function
+int* searchRange(int* nums, int numsSize, int target, int* returnSize) {
+    // Dynamically allocate memory for the result array [start, end]
+    int* result = (int*)malloc(2 * sizeof(int));
+    *returnSize = 2; // LeetCode expects us to set the return size
+
+    // Find the starting and ending positions
+    result[0] = findBound(nums, numsSize, target, 1); // 1 for first occurrence
+    result[1] = findBound(nums, numsSize, target, 0); // 0 for last occurrence
+
+    return result;
+}
