@@ -1,0 +1,65 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Helper function to handle the backtracking
+void backtrack(int* candidates, int candidatesSize, int target, int index, 
+               int* current, int currentSize, 
+               int*** result, int* resultSize, int** columnSizes) {
+    
+    // Base Case 1: If target is exactly 0, we found a valid combination!
+    if (target == 0) {
+        // Expand our result list to fit one more combination
+        *result = realloc(*result, (*resultSize + 1) * sizeof(int*));
+        *columnSizes = realloc(*columnSizes, (*resultSize + 1) * sizeof(int));
+        
+        // Copy the current combination into the result list
+        (*result)[*resultSize] = (int*)malloc(currentSize * sizeof(int));
+        for (int i = 0; i < currentSize; i++) {
+            (*result)[*resultSize][i] = current[i];
+        }
+        (*columnSizes)[*resultSize] = currentSize;
+        (*resultSize)++;
+        return;
+    }
+    
+    // Base Case 2: Out of bounds or target became negative
+    if (index >= candidatesSize || target < 0) {
+        return;
+    }
+    
+    // Choice 1: Include the current candidate (can be reused, so index stays the same)
+    if (target >= candidates[index]) {
+        current[currentSize] = candidates[index]; // Add to path
+        backtrack(candidates, candidatesSize, target - candidates[index], index, 
+                  current, currentSize + 1, result, resultSize, columnSizes);
+    }
+    
+    // Choice 2: Skip the current candidate and move to the next one
+    backtrack(candidates, candidatesSize, target, index + 1, 
+              current, currentSize, result, resultSize, columnSizes);
+}
+
+// Main function required by LeetCode
+int** combinationSum(int* candidates, int candidatesSize, int target, int* returnSize, int** returnColumnSizes) {
+    // Initialize results pointers
+    int** result = NULL;
+    int* columnSizes = NULL;
+    int resultSize = 0;
+    
+    // Allocate a temporary buffer to hold the active combination path.
+    // The maximum possible length of a path is target / min_candidate.
+    // Since candidates are positive integers >= 1, allocating 'target' size is safe.
+    int* current = (int*)malloc(target * sizeof(int));
+    
+    // Start backtracking from index 0
+    backtrack(candidates, candidatesSize, target, 0, current, 0, &result, &resultSize, &columnSizes);
+    
+    // Free the temporary path buffer
+    free(current);
+    
+    // Set return values for the caller
+    *returnSize = resultSize;
+    *returnColumnSizes = columnSizes;
+    
+    return result;
+}
