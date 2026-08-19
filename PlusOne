@@ -1,0 +1,28 @@
+#include <stdlib.h>
+
+int* plusOne(int* digits, int digitsSize, int* returnSize) {
+    // Start from the last digit and move backwards
+    for (int i = digitsSize - 1; i >= 0; i--) {
+        // If the digit is less than 9, just add 1 and we are done!
+        if (digits[i] < 9) {
+            digits[i]++;
+            *returnSize = digitsSize; // The array size didn't change
+            return digits;
+        }
+        // If the digit is 9, it becomes 0 and carries over to the next loop iteration
+        digits[i] = 0;
+    }
+    
+    // If the loop finishes, it means ALL digits were 9 (like 99 or 999)
+    // We need a new array that is 1 size larger (e.g., 99 becomes 100)
+    *returnSize = digitsSize + 1;
+    int* result = (int*)malloc((*returnSize) * sizeof(int));
+    
+    // The new number will always start with 1 followed by all 0s
+    result[0] = 1;
+    for (int i = 1; i < *returnSize; i++) {
+        result[i] = 0;
+    }
+    
+    return result;
+}
