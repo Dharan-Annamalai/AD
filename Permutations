@@ -1,0 +1,59 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Helper function to swap two integers
+void swap(int* a, int* b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+// Backtracking helper function
+void backtrack(int* nums, int numsSize, int start, int*** result, int* resultSize) {
+    // Base Case: If we have fixed all positions, we found a full permutation
+    if (start == numsSize) {
+        // Expand our 2D result array to fit one more row
+        *result = realloc(*result, (*resultSize + 1) * sizeof(int*));
+        
+        // Allocate space for the new permutation row
+        (*result)[*resultSize] = (int*)malloc(numsSize * sizeof(int));
+        
+        // Copy the current state of nums into the result row
+        for (int i = 0; i < numsSize; i++) {
+            (*result)[*resultSize][i] = nums[i];
+        }
+        
+        (*resultSize)++;
+        return;
+    }
+
+    // Try placing every remaining element into the 'start' position
+    for (int i = start; i < numsSize; i++) {
+        swap(&nums[start], &nums[i]); // Place nums[i] at the current spot
+        
+        // Move to the next index
+        backtrack(nums, numsSize, start + 1, result, resultSize);
+        
+        swap(&nums[start], &nums[i]); // Swap back (backtrack)
+    }
+}
+
+// Main function required by LeetCode
+int** permute(int* nums, int numsSize, int* returnSize, int** returnColumnSizes) {
+    int** result = NULL;
+    int resultSize = 0;
+
+    // Start the backtracking process from index 0
+    backtrack(nums, numsSize, 0, &result, &resultSize);
+
+    // Set the total number of permutations found
+    *returnSize = resultSize;
+
+    // Every single permutation row will have exactly 'numsSize' columns
+    *returnColumnSizes = (int*)malloc(resultSize * sizeof(int));
+    for (int i = 0; i < resultSize; i++) {
+        (*returnColumnSizes)[i] = numsSize;
+    }
+
+    return result;
+}
