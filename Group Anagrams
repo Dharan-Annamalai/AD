@@ -1,0 +1,51 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+int compareChars(const void* a, const void* b) {
+    return (*(char*)a - *(char*)b);
+}
+typedef struct {
+    char key[101];          
+    char** strings;         
+    int count;              
+    int capacity;           
+    UT_hash_handle hh;      
+} AnagramNode;
+char*** groupAnagrams(char** strs, int strsSize, int* returnSize, int** returnColumnSizes) {
+    AnagramNode* hashMap = NULL;
+    for (int i = 0; i < strsSize; i++) {
+        char sortedKey[101];
+        strcpy(sortedKey, strs[i]);
+        int len = strlen(sortedKey);
+        qsort(sortedKey, len, sizeof(char), compareChars);
+        AnagramNode* node = NULL;
+        HASH_FIND_STR(hashMap, sortedKey, node);
+        if (node == NULL) {
+            node = (AnagramNode*)malloc(sizeof(AnagramNode));
+            strcpy(node->key, sortedKey);
+            node->capacity = 4;
+            node->strings = (char**)malloc(node->capacity * sizeof(char*));
+            node->count = 0;
+            HASH_ADD_STR(hashMap, key, node);
+        }
+        if (node->count >= node->capacity) {
+            node->capacity *= 2;
+            node->strings = (char**)realloc(node->strings, node->capacity * sizeof(char*));
+        }
+        node->strings[node->count++] = strs[i];
+    }
+    int totalGroups = HASH_COUNT(hashMap);
+    *returnSize = totalGroups;
+    *returnColumnSizes = (int*)malloc(totalGroups * sizeof(int));
+    char*** result = (char***)malloc(totalGroups * sizeof(char**));
+    AnagramNode *currNode, *tmp;
+    int groupIdx = 0;
+    HASH_ITER(hh, hashMap, currNode, tmp) {
+        result[groupIdx] = currNode->strings;
+        (*returnColumnSizes)[groupIdx] = currNode->count;
+        groupIdx++;
+        HASH_DEL(hashMap, currNode);
+        free(currNode);
+    }
+    return result;
+}
