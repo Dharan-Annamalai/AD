@@ -1,0 +1,26 @@
+#include <stdlib.h>
+
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int* getRow(int rowIndex, int* returnSize) {
+    // Set the return size to rowindex + 1 elements
+    *returnSize = rowIndex + 1;
+    
+    // Allocate memory for the row
+    int* row = (int*)malloc((*returnSize) * sizeof(int));
+    
+    // The first element of any row is always 1
+    row[0] = 1;
+    
+    // Use a long variable to prevent integer overflow during multiplications
+    long long currentVal = 1;
+    
+    for (int i = 1; i <= rowIndex; i++) {
+        // Calculate the next element based on the previous element
+        currentVal = currentVal * (rowIndex - i + 1) / i;
+        row[i] = (int)currentVal;
+    }
+    
+    return row;
+}
