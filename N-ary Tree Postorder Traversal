@@ -1,0 +1,57 @@
+#include <stdlib.h>
+
+/**
+ * Definition for a Node.
+ * struct Node {
+ *     int val;
+ *     int numChildren;
+ *     struct Node** children;
+ * };
+ */
+
+int* postorder(struct Node* root, int* returnSize) {
+    *returnSize = 0;
+    if (root == NULL) {
+        return NULL;
+    }
+
+    // Allocate memory for the return array (up to 10000 elements)
+    int* v = (int*)malloc(10000 * sizeof(int));
+    int index = 0;
+
+    // Stacks for iterative traversal
+    struct Node* nodeStack[10000];
+    int childIdxStack[10000];
+    int top = -1;
+
+    // Push root onto the stack and initialize its child tracker
+    top++;
+    nodeStack[top] = root;
+    childIdxStack[top] = 0;
+
+    while (top >= 0) {
+        struct Node* curr = nodeStack[top];
+        int currChildIdx = childIdxStack[top];
+
+        // If the current node has more children to visit
+        if (currChildIdx < curr->numChildren) {
+            // Move to the next child for the next time we see this parent
+            childIdxStack[top]++;
+            
+            // Push the child onto the stack
+            struct Node* child = curr->children[currChildIdx];
+            if (child != NULL) {
+                top++;
+                nodeStack[top] = child;
+                childIdxStack[top] = 0;
+            }
+        } else {
+            // All children are processed, visit the parent node (Postorder)
+            v[index++] = curr->val;
+            top--; // Pop from stack
+        }
+    }
+
+    *returnSize = index;
+    return v;
+}
