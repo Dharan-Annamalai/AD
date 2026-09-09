@@ -1,0 +1,72 @@
+#include <stdbool.h>
+#include <stdlib.h>
+
+// Define a basic Stack structure
+typedef struct {
+    int* data;
+    int top;
+} Stack;
+
+// Define the MyQueue structure containing two stacks
+typedef struct {
+    Stack* s1; // For pushing incoming elements
+    Stack* s2; // For popping/peeking elements
+} MyQueue;
+
+// Helper function to create a stack
+Stack* createStack(int capacity) {
+    Stack* stack = (Stack*)malloc(sizeof(Stack));
+    stack->data = (int*)malloc(capacity * sizeof(int));
+    stack->top = -1;
+    return stack;
+}
+
+MyQueue* myQueueCreate() {
+    MyQueue* queue = (MyQueue*)malloc(sizeof(MyQueue));
+    // The constraints mention at most 100 calls, so a capacity of 100 is safe
+    queue->s1 = createStack(100);
+    queue->s2 = createStack(100);
+    return queue;
+}
+
+void myQueuePush(MyQueue* obj, int x) {
+    // Standard stack push onto s1
+    obj->s1->data[++(obj->s1->top)] = x;
+}
+
+int myQueuePop(MyQueue* obj) {
+    // If s2 is empty, shift all elements from s1 to s2
+    if (obj->s2->top == -1) {
+        while (obj->s1->top != -1) {
+            int val = obj->s1->data[(obj->s1->top)--];
+            obj->s2->data[++(obj->s2->top)] = val;
+        }
+    }
+    // Standard stack pop from s2
+    return obj->s2->data[(obj->s2->top)--];
+}
+
+int myQueuePeek(MyQueue* obj) {
+    // If s2 is empty, shift all elements from s1 to s2
+    if (obj->s2->top == -1) {
+        while (obj->s1->top != -1) {
+            int val = obj->s1->data[(obj->s1->top)--];
+            obj->s2->data[++(obj->s2->top)] = val;
+        }
+    }
+    // Standard stack peek from s2
+    return obj->s2->data[obj->s2->top];
+}
+
+bool myQueueEmpty(MyQueue* obj) {
+    // The queue is empty only if both internal stacks are empty
+    return (obj->s1->top == -1 && obj->s2->top == -1);
+}
+
+void myQueueFree(MyQueue* obj) {
+    free(obj->s1->data);
+    free(obj->s1);
+    free(obj->s2->data);
+    free(obj->s2);
+    free(obj);
+}
