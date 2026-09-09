@@ -1,0 +1,90 @@
+#include <stdbool.h>
+#include <stdlib.h>
+
+// Define a basic Queue structure
+typedef struct {
+    int* data;
+    int front;
+    int rear;
+    int size;
+    int capacity;
+} Queue;
+
+// Define the MyStack structure containing our queue
+typedef struct {
+    Queue* q;
+} MyStack;
+
+// Helper function to create a queue
+Queue* createQueue(int capacity) {
+    Queue* queue = (Queue*)malloc(sizeof(Queue));
+    queue->data = (int*)malloc(capacity * sizeof(int));
+    queue->front = 0;
+    queue->rear = -1;
+    queue->size = 0;
+    queue->capacity = capacity;
+    return queue;
+}
+
+// Standard queue operations
+void queuePush(Queue* q, int val) {
+    q->rear = (q->rear + 1) % q->capacity;
+    q->data[q->rear] = val;
+    q->size++;
+}
+
+int queuePop(Queue* q) {
+    int val = q->data[q->front];
+    q->front = (q->front + 1) % q->capacity;
+    q->size--;
+    return val;
+}
+
+int queuePeek(Queue* q) {
+    return q->data[q->front];
+}
+
+bool queueIsEmpty(Queue* q) {
+    return q->size == 0;
+}
+
+// Stack implementation functions
+MyStack* myStackCreate() {
+    MyStack* stack = (MyStack*)malloc(sizeof(MyStack));
+    // The constraints mention at most 100 calls, so a capacity of 100 is safe
+    stack->q = createQueue(100);
+    return stack;
+}
+
+void myStackPush(MyStack* obj, int x) {
+    int currentSize = obj->q->size;
+    
+    // 1. Push the new element to the back of the queue
+    queuePush(obj->q, x);
+    
+    // 2. Rotate the queue: move all previous elements behind the new element
+    for (int i = 0; i < currentSize; i++) {
+        int temp = queuePop(obj->q);
+        queuePush(obj->q, temp);
+    }
+}
+
+int myStackPop(MyStack* obj) {
+    // Because of the rotation during push, the top of the stack is always at the front of the queue
+    return queuePop(obj->q);
+}
+
+int myStackTop(MyStack* obj) {
+    // Look at the front element without removing it
+    return queuePeek(obj->q);
+}
+
+bool myStackEmpty(MyStack* obj) {
+    return queueIsEmpty(obj->q);
+}
+
+void myStackFree(MyStack* obj) {
+    free(obj->q->data);
+    free(obj->q);
+    free(obj);
+}
