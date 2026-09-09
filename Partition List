@@ -1,0 +1,38 @@
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     struct ListNode *next;
+ * };
+ */
+
+struct ListNode* partition(struct ListNode* head, int x) {
+    // Dummy heads to anchor both lists on the stack
+    struct ListNode lessHead;
+    struct ListNode greaterHead;
+    
+    // Tail pointers to track the end of both lists as we append nodes
+    struct ListNode* lessTail = &lessHead;
+    struct ListNode* greaterTail = &greaterHead;
+    
+    // Traverse the original list
+    while (head != NULL) {
+        if (head->val < x) {
+            lessTail->next = head;      // Append to the 'less' list
+            lessTail = lessTail->next;  // Advance the 'less' tail
+        } else {
+            greaterTail->next = head;   // Append to the 'greater' list
+            greaterTail = greaterTail->next; // Advance the 'greater' tail
+        }
+        head = head->next;
+    }
+    
+    // Crucial step: Terminate the greater list to avoid infinite loops/cycles
+    greaterTail->next = NULL;
+    
+    // Concatenate the two lists
+    lessTail->next = greaterHead.next;
+    
+    // Return the actual head of the partitioned list
+    return lessHead.next;
+}
